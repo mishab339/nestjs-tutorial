@@ -16,6 +16,7 @@ import { CreateUserDto } from './dtos/create-user.dto';
 import { Profile } from 'src/profile/profile.entity';
 import { ConfigService } from '@nestjs/config';
 import { table } from 'console';
+import { UserAlreadyExistsException } from 'src/CustomExceptoins/user-already-exist.exceptoin';
 
 @Injectable()
 export class UsersService {
@@ -45,13 +46,17 @@ export class UsersService {
   public async createUser(userDto: CreateUserDto) {
     try {
       userDto.profile = userDto.profile ?? {};
-      const existingUser = await this.userRepository.findOne({
-        where: [{ username: userDto.username }, { email: userDto.email }],
+      const existingUserWithUsername = await this.userRepository.findOne({
+        where: [{ username: userDto.username }],
       });
-      if (existingUser) {
-        throw new BadRequestException(
-          'User with this email or username already exist',
-        );
+      if (existingUserWithUsername) {
+        throw new UserAlreadyExistsException('username', userDto.username);
+      }
+      const existingUserWithEmail = await this.userRepository.findOne({
+        where: [{ email: userDto.email }],
+      });
+      if (existingUserWithEmail) {
+        throw new UserAlreadyExistsException('Email', userDto.email);
       }
       let user = this.userRepository.create(userDto);
       await this.userRepository.save(user);
