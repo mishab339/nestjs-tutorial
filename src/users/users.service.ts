@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   forwardRef,
   Inject,
   Injectable,
@@ -38,9 +39,23 @@ export class UsersService {
     }
   }
   public async createUser(userDto: CreateUserDto) {
-    userDto.profile = userDto.profile ?? {};
-    let user = this.userRepository.create(userDto);
-    await this.userRepository.save(user);
+    try {
+      userDto.profile = userDto.profile ?? {};
+      let user = this.userRepository.create(userDto);
+      await this.userRepository.save(user);
+    } catch (error) {
+      if (error.code === 'ECONNREFUSED') {
+        throw new RequestTimeoutException(
+          'An error has occured. please try again later',
+          { description: 'Could not connect To database' },
+        );
+      }
+      if (error.code === '23505') {
+        throw new BadRequestException(
+          'User with this email or username already exist',
+        );
+      }
+    }
   }
   public async deleteUser(id: number) {
     await this.userRepository.delete(id);
