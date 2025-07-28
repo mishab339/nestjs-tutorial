@@ -7,7 +7,6 @@ export class AuthController {
 
     @Post()
     Login(@Body() user:{email:string,password:string}){
-        // this.authService.login(user.email,user.password);
-        // return { message: 'Login endpoint hit' };
+        return this.authService.login(user.email,user.password);
     }
 }
