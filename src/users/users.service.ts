@@ -1,8 +1,11 @@
 import {
   BadRequestException,
   forwardRef,
+  HttpException,
+  HttpStatus,
   Inject,
   Injectable,
+  NotFoundException,
   RequestTimeoutException,
 } from '@nestjs/common';
 import { AuthService } from 'src/auth/auth.service';
@@ -12,6 +15,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { Profile } from 'src/profile/profile.entity';
 import { ConfigService } from '@nestjs/config';
+import { table } from 'console';
 
 @Injectable()
 export class UsersService {
@@ -45,7 +49,7 @@ export class UsersService {
         where: [{ username: userDto.username }, { email: userDto.email }],
       });
       if (existingUser) {
-         throw new BadRequestException(
+        throw new BadRequestException(
           'User with this email or username already exist',
         );
       }
@@ -72,6 +76,23 @@ export class UsersService {
   }
 
   public async getUserById(id: number) {
-    return await this.userRepository.findOneBy({ id });
+    const user = await this.userRepository.findOneBy({ id });
+    if (!user) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: `User with id ${id} not found`,
+          table: 'user',
+        },
+        HttpStatus.NOT_FOUND,
+        {
+          description:
+            'The excepton occured because a user with ID ' +
+            id +
+            'was not found in user table',
+        },
+      );
+    }
+    return user;
   }
 }
