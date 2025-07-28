@@ -1,4 +1,9 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  RequestTimeoutException,
+} from '@nestjs/common';
 import { AuthService } from 'src/auth/auth.service';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
@@ -15,17 +20,22 @@ export class UsersService {
 
     @InjectRepository(Profile)
     private profileRepository: Repository<Profile>,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
   ) {}
 
-  getAllUsers() {
-    const environment = this.configService.get<string>('ENV_MODE');
-    console.log(`Current Environment: ${environment}`);
-    return this.userRepository.find({
-      relations: {
-        profile: true,
-      },
-    });
+  public async getAllUsers() {
+    try {
+      return await this.userRepository.find({
+        relations: {
+          profile: true,
+        },
+      });
+    } catch (error) {
+      throw new RequestTimeoutException(
+        'An error has occured. please try again later',
+        { description: 'Could not connect To database' },
+      );
+    }
   }
   public async createUser(userDto: CreateUserDto) {
     userDto.profile = userDto.profile ?? {};
