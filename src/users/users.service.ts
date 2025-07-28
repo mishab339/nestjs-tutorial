@@ -41,6 +41,14 @@ export class UsersService {
   public async createUser(userDto: CreateUserDto) {
     try {
       userDto.profile = userDto.profile ?? {};
+      const existingUser = await this.userRepository.findOne({
+        where: [{ username: userDto.username }, { email: userDto.email }],
+      });
+      if (existingUser) {
+         throw new BadRequestException(
+          'User with this email or username already exist',
+        );
+      }
       let user = this.userRepository.create(userDto);
       await this.userRepository.save(user);
     } catch (error) {
@@ -50,11 +58,12 @@ export class UsersService {
           { description: 'Could not connect To database' },
         );
       }
-      if (error.code === '23505') {
-        throw new BadRequestException(
-          'User with this email or username already exist',
-        );
-      }
+      // if (error.code === '23505') {
+      //   throw new BadRequestException(
+      //     'User with this email or username already exist',
+      //   );
+      // }
+      throw error;
     }
   }
   public async deleteUser(id: number) {
