@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, Param, ParseIntPipe } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  Param,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UsersService } from 'src/users/users.service';
 import { Repository } from 'typeorm';
@@ -6,6 +11,7 @@ import { Tweet } from './tweet.entity';
 import { CreateTweetDto } from './dto/create-tweet.dto';
 import { HashtagService } from 'src/hashtag/hashtag.service';
 import { UpdateTweetDto } from './dto/update-tweet.dto';
+import { PaginationQueryDto } from 'src/common/pagination/dto/pagination-query.dto';
 
 @Injectable()
 export class TweetService {
@@ -16,14 +22,16 @@ export class TweetService {
     private readonly tweetRepository: Repository<Tweet>,
   ) {}
 
-  public async getTweets(userId: number) {
+  public async getTweets(userId: number, pageQueryDto: PaginationQueryDto) {
     let user = await this.usersService.getUserById(userId);
-    if(!user){
-      throw new NotFoundException(`User with userId ${userId} is not found`)
+    if (!user) {
+      throw new NotFoundException(`User with userId ${userId} is not found`);
     }
     return await this.tweetRepository.find({
       where: { user: { id: userId } },
       relations: { user: true, hashtags: true },
+      skip: ((pageQueryDto.page ?? 1) - 1) * (pageQueryDto.limit ?? 10),
+      take: pageQueryDto.limit ?? 10,
     });
   }
 
