@@ -38,7 +38,7 @@ export class UsersService {
       });
     } catch (error) {
       throw new RequestTimeoutException(
-        'An error has occured. please try again later',
+        'An error has occurred. please try again later',
         { description: 'Could not connect To database' },
       );
     }
