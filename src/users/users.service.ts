@@ -16,7 +16,9 @@ import { CreateUserDto } from './dtos/create-user.dto';
 import { Profile } from 'src/profile/profile.entity';
 import { ConfigService } from '@nestjs/config';
 import { table } from 'console';
-import { UserAlreadyExistsException } from 'src/CustomExceptoins/user-already-exist.exceptoin';
+import { UserAlreadyExistsException } from 'src/CustomExceptions/user-already-exist.exception';
+import { PaginationProvider } from 'src/common/pagination/pagination.provider';
+import { PaginationQueryDto } from 'src/common/pagination/dto/pagination-query.dto';
 
 @Injectable()
 export class UsersService {
@@ -24,18 +26,23 @@ export class UsersService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
 
-    @InjectRepository(Profile)
-    private profileRepository: Repository<Profile>,
     private readonly configService: ConfigService,
+    private readonly paginationProvider: PaginationProvider,
   ) {}
 
-  public async getAllUsers() {
+  public async getAllUsers(paginationQueryDto: PaginationQueryDto) {
     try {
-      return await this.userRepository.find({
-        relations: {
-          profile: true,
-        },
-      });
+     return await this.paginationProvider.paginateQuery(
+        paginationQueryDto,
+        this.userRepository,
+        undefined,
+        ['profile']
+      );
+      // return await this.userRepository.find({
+      //   relations: {
+      //     profile: true,
+      //   },
+      // });
     } catch (error) {
       throw new RequestTimeoutException(
         'An error has occurred. please try again later',

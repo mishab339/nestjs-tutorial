@@ -12,14 +12,15 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dtos/create-user.dto';
+import { PaginationQueryDto } from 'src/common/pagination/dto/pagination-query.dto';
 
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Get()
-  GetAllUsers() {
-    return this.usersService.getAllUsers();
+  GetAllUsers(@Query() pageQueryDto:PaginationQueryDto) {
+    return this.usersService.getAllUsers(pageQueryDto);
   }
 
   @Get(':id')
