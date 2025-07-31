@@ -7,6 +7,7 @@ import {
   Injectable,
   NotFoundException,
   RequestTimeoutException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from 'src/auth/auth.service';
 import { Repository } from 'typeorm';
@@ -19,6 +20,7 @@ import { table } from 'console';
 import { UserAlreadyExistsException } from 'src/CustomExceptions/user-already-exist.exception';
 import { PaginationProvider } from 'src/common/pagination/pagination.provider';
 import { PaginationQueryDto } from 'src/common/pagination/dto/pagination-query.dto';
+import { HashingProvider } from 'src/auth/provider/hashing.provider';
 
 @Injectable()
 export class UsersService {
@@ -28,15 +30,17 @@ export class UsersService {
 
     private readonly configService: ConfigService,
     private readonly paginationProvider: PaginationProvider,
+    @Inject(forwardRef(() => HashingProvider))
+    private readonly hashingProvider: HashingProvider,
   ) {}
 
   public async getAllUsers(paginationQueryDto: PaginationQueryDto) {
     try {
-     return await this.paginationProvider.paginateQuery(
+      return await this.paginationProvider.paginateQuery(
         paginationQueryDto,
         this.userRepository,
         undefined,
-        ['profile']
+        ['profile'],
       );
       // return await this.userRepository.find({
       //   relations: {
@@ -65,7 +69,10 @@ export class UsersService {
       if (existingUserWithEmail) {
         throw new UserAlreadyExistsException('Email', userDto.email);
       }
-      let user = this.userRepository.create(userDto);
+      let user = this.userRepository.create({
+        ...userDto,
+        password: await this.hashingProvider.hashPassword(userDto.password),
+      });
       return await this.userRepository.save(user);
     } catch (error) {
       if (error.code === 'ECONNREFUSED') {
@@ -104,6 +111,22 @@ export class UsersService {
             'was not found in user table',
         },
       );
+    }
+    return user;
+  }
+
+  public async findUserByUsername(username: string) {
+    let user: User | null = null;
+
+    try {
+      user = await this.userRepository.findOneBy({ username });
+    } catch (error) {
+      throw new RequestTimeoutException(error, {
+        description: 'User with given username could not be found!',
+      });
+    }
+    if(!user){
+      throw new UnauthorizedException("User does not exist");
     }
     return user;
   }

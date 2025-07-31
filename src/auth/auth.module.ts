@@ -16,7 +16,7 @@ import authConfig from './config/auth.config';
       useClass: BcryptProvider,
     },
   ],
-  imports: [UsersModule, ConfigModule.forFeature(authConfig)],
-  exports: [AuthService],
+  imports: [forwardRef(() => UsersModule), ConfigModule.forFeature(authConfig)],
+  exports: [AuthService,HashingProvider],
 })
 export class AuthModule {}
