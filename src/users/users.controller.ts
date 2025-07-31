@@ -32,6 +32,7 @@ export class UsersController {
     return this.usersService.createUser(user);
   }
 
+
   @Delete(':id')
   public DeleteUser(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.deleteUser(id);

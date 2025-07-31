@@ -66,7 +66,7 @@ export class UsersService {
         throw new UserAlreadyExistsException('Email', userDto.email);
       }
       let user = this.userRepository.create(userDto);
-      await this.userRepository.save(user);
+      return await this.userRepository.save(user);
     } catch (error) {
       if (error.code === 'ECONNREFUSED') {
         throw new RequestTimeoutException(
