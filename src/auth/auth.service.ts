@@ -11,6 +11,9 @@ import { CreateUserDto } from 'src/users/dtos/create-user.dto';
 import { LoginDto } from './dto/login.dto';
 import { HashingProvider } from './provider/hashing.provider';
 import { JwtService } from '@nestjs/jwt';
+import { User } from 'src/users/user.entity';
+import { ActiveUserType } from './interfaces/active-user-type.interface';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @Injectable()
 export class AuthService {
@@ -38,40 +41,30 @@ export class AuthService {
     if (!IsEqual) {
       throw new UnauthorizedException('Incorrect Password');
     }
-    const token = await this.jwtService.signAsync(
-      {
-        sub: user.id,
-        email: user.email,
-      },
-      {
-        secret: this.authConfigurations.secret,
-        expiresIn: this.authConfigurations.expiresIn,
-        audience: this.authConfigurations.audience,
-        issuer: this.authConfigurations.issuer,
-      },
-    );
-
-    const refreshToken = await this.jwtService.signAsync(
-      {
-        sub: user.id,
-      },
-      {
-        secret: this.authConfigurations.secret,
-        expiresIn: this.authConfigurations.refreshTokenExpiresIn,
-        audience: this.authConfigurations.audience,
-        issuer: this.authConfigurations.issuer,
-      },
-    );
-    return {
-      token: token,
-    };
+    return this.generateToken(user);
   }
 
   public async signup(createUserDto: CreateUserDto) {
     return await this.usersService.createUser(createUserDto);
   }
 
-  private async signToken<T>(userId: number, expiresIn: number, payload: T) {
+  public async refreshToken(refreshTokenDto: RefreshTokenDto) {
+    try {
+      const { sub } = await this.jwtService.verifyAsync(
+        refreshTokenDto.refreshToken,
+        {
+          secret: this.authConfigurations.secret,
+          audience: this.authConfigurations.audience,
+          issuer: this.authConfigurations.issuer,
+        },
+      );
+      const user = await this.usersService.getUserById(sub);
+      return await this.generateToken(user);
+    } catch (error) {
+      throw new UnauthorizedException(error);
+    }
+  }
+  private async signToken<T>(userId: number, expiresIn: number, payload?: T) {
     return await this.jwtService.signAsync(
       {
         sub: userId,
@@ -84,5 +77,19 @@ export class AuthService {
         issuer: this.authConfigurations.issuer,
       },
     );
+  }
+
+  private async generateToken(user: User) {
+    const accessToken = await this.signToken<Partial<ActiveUserType>>(
+      user.id,
+      this.authConfigurations.expiresIn,
+      { email: user.email },
+    );
+    const refreshToken = await this.signToken(
+      user.id,
+      this.authConfigurations.refreshTokenExpiresIn,
+    );
+
+    return { token: accessToken, refreshToken };
   }
 }

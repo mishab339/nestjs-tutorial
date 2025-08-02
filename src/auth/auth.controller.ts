@@ -10,6 +10,7 @@ import { AuthService } from './auth.service';
 import { CreateUserDto } from 'src/users/dtos/create-user.dto';
 import { LoginDto } from './dto/login.dto';
 import { AllowAnonymous } from './decorators/allow-anonymous.decorator';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -26,5 +27,11 @@ export class AuthController {
   @Post('signup')
   async SignUp(@Body() createUserDto: CreateUserDto) {
     return await this.authService.signup(createUserDto);
+  }
+
+  @AllowAnonymous()
+  @Post('refresh-token')
+  public async RefreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
+    return this.authService.refreshToken(refreshTokenDto);
   }
 }
