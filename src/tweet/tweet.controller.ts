@@ -32,9 +32,8 @@ export class TweetController {
   }
 
   @Post()
-  public CreateTweet(@Body() tweet: CreateTweetDto, @ActiveUser('email') user) {
-    console.log(user);
-    // return this.tweetService.createTweet(tweet);
+  public CreateTweet(@Body() tweet: CreateTweetDto, @ActiveUser('sub') userId) {
+    return this.tweetService.createTweet(tweet,userId);
   }
 
   @Patch()

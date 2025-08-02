@@ -50,12 +50,39 @@ export class AuthService {
         issuer: this.authConfigurations.issuer,
       },
     );
+
+    const refreshToken = await this.jwtService.signAsync(
+      {
+        sub: user.id,
+      },
+      {
+        secret: this.authConfigurations.secret,
+        expiresIn: this.authConfigurations.refreshTokenExpiresIn,
+        audience: this.authConfigurations.audience,
+        issuer: this.authConfigurations.issuer,
+      },
+    );
     return {
-       token:token
+      token: token,
     };
   }
 
   public async signup(createUserDto: CreateUserDto) {
     return await this.usersService.createUser(createUserDto);
+  }
+
+  private async signToken<T>(userId: number, expiresIn: number, payload: T) {
+    return await this.jwtService.signAsync(
+      {
+        sub: userId,
+        ...payload,
+      },
+      {
+        secret: this.authConfigurations.secret,
+        expiresIn: expiresIn,
+        audience: this.authConfigurations.audience,
+        issuer: this.authConfigurations.issuer,
+      },
+    );
   }
 }
