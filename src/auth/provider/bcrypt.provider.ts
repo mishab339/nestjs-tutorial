@@ -12,7 +12,7 @@ export class BcryptProvider implements HashingProvider {
   public async comparePassword(
     plainPassword: string | Buffer,
     hashedPassword: string | Buffer,
-  ): Promise<Boolean> {
+  ): Promise<boolean> {
     return bcrypt.compare(plainPassword, hashedPassword);
   }
 }

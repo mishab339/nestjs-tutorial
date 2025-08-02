@@ -25,9 +25,7 @@ import { HashingProvider } from 'src/auth/provider/hashing.provider';
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
-
+    @InjectRepository(User) private userRepository: Repository<User>,
     private readonly configService: ConfigService,
     private readonly paginationProvider: PaginationProvider,
     @Inject(forwardRef(() => HashingProvider))
@@ -54,6 +52,7 @@ export class UsersService {
       );
     }
   }
+
   public async createUser(userDto: CreateUserDto) {
     try {
       userDto.profile = userDto.profile ?? {};
@@ -77,7 +76,7 @@ export class UsersService {
     } catch (error) {
       if (error.code === 'ECONNREFUSED') {
         throw new RequestTimeoutException(
-          'An error has occured. please try again later',
+          'An error has occurred. please try again later',
           { description: 'Could not connect To database' },
         );
       }
@@ -89,6 +88,7 @@ export class UsersService {
       throw error;
     }
   }
+
   public async deleteUser(id: number) {
     await this.userRepository.delete(id);
     return { deleted: true };
@@ -106,7 +106,7 @@ export class UsersService {
         HttpStatus.NOT_FOUND,
         {
           description:
-            'The excepton occured because a user with ID ' +
+            'The exception occurred because a user with ID ' +
             id +
             'was not found in user table',
         },
@@ -117,7 +117,6 @@ export class UsersService {
 
   public async findUserByUsername(username: string) {
     let user: User | null = null;
-
     try {
       user = await this.userRepository.findOneBy({ username });
     } catch (error) {
@@ -125,8 +124,8 @@ export class UsersService {
         description: 'User with given username could not be found!',
       });
     }
-    if(!user){
-      throw new UnauthorizedException("User does not exist");
+    if (!user) {
+      throw new UnauthorizedException('User does not exist');
     }
     return user;
   }
