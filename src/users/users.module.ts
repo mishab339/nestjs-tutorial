@@ -15,7 +15,7 @@ import { AuthorizeGuard } from 'src/auth/guards/authorize.guard';
 @Module({
   controllers: [UsersController],
   providers: [
-    UsersService
+    UsersService,
   ],
   exports: [UsersService],
   imports: [

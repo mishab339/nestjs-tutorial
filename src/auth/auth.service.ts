@@ -24,6 +24,7 @@ export class AuthService {
     private readonly hashingProvider: HashingProvider,
     private readonly jwtService: JwtService,
   ) {}
+  
   isAuthenticated: boolean = false;
 
   public async login(loginDto: LoginDto) {
