@@ -16,6 +16,7 @@ import { UpdateTweetDto } from './dto/update-tweet.dto';
 import { PaginationQueryDto } from 'src/common/pagination/dto/pagination-query.dto';
 import { GetTweetQueryDto } from './dto/get-tweet-query.dto';
 import { request } from 'http';
+import { ActiveUser } from 'src/auth/decorators/active-user.decorator';
 
 @Controller('tweet')
 export class TweetController {
@@ -31,8 +32,8 @@ export class TweetController {
   }
 
   @Post()
-  public CreateTweet(@Body() tweet: CreateTweetDto, @Req() request) {
-    console.log(request.user);
+  public CreateTweet(@Body() tweet: CreateTweetDto, @ActiveUser('email') user) {
+    console.log(user);
     // return this.tweetService.createTweet(tweet);
   }
 
