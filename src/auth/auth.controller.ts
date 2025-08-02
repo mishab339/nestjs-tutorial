@@ -22,6 +22,7 @@ export class AuthController {
     return this.authService.login(loginDto);
   }
 
+  @AllowAnonymous()
   @Post('signup')
   async SignUp(@Body() createUserDto: CreateUserDto) {
     return await this.authService.signup(createUserDto);

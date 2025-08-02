@@ -24,7 +24,7 @@ export class AuthService {
     private readonly hashingProvider: HashingProvider,
     private readonly jwtService: JwtService,
   ) {}
-  
+
   isAuthenticated: boolean = false;
 
   public async login(loginDto: LoginDto) {
@@ -38,7 +38,6 @@ export class AuthService {
     if (!IsEqual) {
       throw new UnauthorizedException('Incorrect Password');
     }
-    console.log('Signing with secret:', this.authConfigurations.secret); // Or however you access it
     const token = await this.jwtService.signAsync(
       {
         sub: user.id,
