@@ -30,7 +30,7 @@ export class AuthorizeGuard implements CanActivate {
         this.authConfiguration,
       );
       request['user'] = payload;
-      console.log(payload);
+
     } catch (error) {
       throw new UnauthorizedException();
     }
